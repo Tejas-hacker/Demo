@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face Recognition Demo</title>
+  <script defer src="https://unpkg.com/face-api.js"></script>
+</head>
+<body>
+  <h2>Face Recognition Demo</h2>
+  <video id="video" width="720" height="560" autoplay muted></video>
+  <script>
+    async function run() {
+      await faceapi.nets.faceRecognitionNet.loadFromUri('models')
+      await faceapi.nets.faceLandmark68Net.loadFromUri('models')
+      await faceapi.nets.tinyFaceDetector.loadFromUri('models')
+
+      const video = document.getElementById('video');
+      navigator.mediaDevices.getUserMedia({ video: {} })
+        .then(stream => {
+          video.srcObject = stream;
+        });
+
+      const labeledFaceDescriptors = await loadLabeledImages();
+      const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
+
+      video.addEventListener('play', () => {
+        const canvas = faceapi.createCanvasFromMedia(video);
+        document.body.append(canvas);
+        const displaySize = { width: video.width, height: video.height };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        setInterval(async () => {
+          const detections = await faceapi
+            .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+          const resized = faceapi.resizeResults(detections, displaySize);
+          canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+
+          const results = resized.map(d => faceMatcher.findBestMatch(d.descriptor));
+          results.forEach((result, i) => {
+            const box = resized[i].detection.box;
+            const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() });
+            drawBox.draw(canvas);
+          });
+        }, 1000);
+      });
+    }
+
+    function loadLabeledImages() {
+      return Promise.all([
+        new faceapi.LabeledFaceDescriptors("Admin", [
+          faceapi.fetchImage('admin.jpg')
+            .then(img => faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor())
+            .then(res => res.descriptor)
+        ])
+      ]);
+    }
+
+    run();
+  </script>
+</body>
+</html>
