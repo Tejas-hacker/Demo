@@ -1,22 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Face Recognition Demo</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    video {
+      border: 2px solid #444;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
   <h2>Face Recognition Demo</h2>
   <video id="video" width="720" height="560" autoplay muted></video>
+
   <script>
-    async function run() {
-      await faceapi.nets.faceRecognitionNet.loadFromUri('models')
-      await faceapi.nets.faceLandmark68Net.loadFromUri('models')
-      await faceapi.nets.tinyFaceDetector.loadFromUri('models')
+    window.onload = async function () {
+      await faceapi.nets.faceRecognitionNet.loadFromUri('models');
+      await faceapi.nets.faceLandmark68Net.loadFromUri('models');
+      await faceapi.nets.tinyFaceDetector.loadFromUri('models');
 
       const video = document.getElementById('video');
+
       navigator.mediaDevices.getUserMedia({ video: {} })
         .then(stream => {
           video.srcObject = stream;
+        })
+        .catch(err => {
+          console.error("Webcam access error:", err);
         });
 
       const labeledFaceDescriptors = await loadLabeledImages();
@@ -44,19 +60,20 @@
           });
         }, 1000);
       });
-    }
 
-    function loadLabeledImages() {
-      return Promise.all([
-        new faceapi.LabeledFaceDescriptors("Admin", [
-          faceapi.fetchImage('admin.jpg')
-            .then(img => faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor())
-            .then(res => res.descriptor)
-        ])
-      ]);
-    }
-
-    run();
+      function loadLabeledImages() {
+        return Promise.all([
+          new faceapi.LabeledFaceDescriptors("Admin", [
+            faceapi.fetchImage('admin.jpg')
+              .then(img => faceapi
+                .detectSingleFace(img)
+                .withFaceLandmarks()
+                .withFaceDescriptor())
+              .then(res => res.descriptor)
+          ])
+        ]);
+      }
+    };
   </script>
 </body>
 </html>
