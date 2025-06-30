@@ -16,9 +16,9 @@
 
   <script>
     window.onload = async function () {
-      await faceapi.nets.faceRecognitionNet.loadFromUri('models');
-      await faceapi.nets.faceLandmark68Net.loadFromUri('models');
-      await faceapi.nets.tinyFaceDetector.loadFromUri('models');
+    await faceapi.nets.faceRecognitionNet.loadFromUri('models/face_recognition_model');
+    await faceapi.nets.faceLandmark68Net.loadFromUri('models/face_landmark_68_model');
+    await faceapi.nets.ssdMobilenetv1.loadFromUri('models/ssd_mobilenetv1_model');
 
       const video = document.getElementById('video');
       try {
