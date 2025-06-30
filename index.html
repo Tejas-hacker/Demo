@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,14 +6,8 @@
   <title>Face Recognition Demo</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <style>
-    body {
-      text-align: center;
-      font-family: Arial, sans-serif;
-    }
-    video {
-      border: 2px solid #444;
-      margin-top: 10px;
-    }
+    body { text-align: center; font-family: Arial, sans-serif; }
+    video { border: 2px solid #444; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -26,14 +21,12 @@
       await faceapi.nets.tinyFaceDetector.loadFromUri('models');
 
       const video = document.getElementById('video');
-
-      navigator.mediaDevices.getUserMedia({ video: {} })
-        .then(stream => {
-          video.srcObject = stream;
-        })
-        .catch(err => {
-          console.error("Webcam access error:", err);
-        });
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+        video.srcObject = stream;
+      } catch (err) {
+        console.error("Webcam access error:", err);
+      }
 
       const labeledFaceDescriptors = await loadLabeledImages();
       const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
@@ -61,26 +54,26 @@
         }, 1000);
       });
 
-     function loadLabeledImages() {
-  return Promise.all([
-    new Promise(async (resolve, reject) => {
-      const img = await faceapi.fetchImage('admin.jpg');
-      const detection = await faceapi
-        .detectSingleFace(img)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
+      async function loadLabeledImages() {
+        return Promise.all([
+          new Promise(async (resolve, reject) => {
+            const img = await faceapi.fetchImage('admin.jpg');
+            const detection = await faceapi
+              .detectSingleFace(img)
+              .withFaceLandmarks()
+              .withFaceDescriptor();
 
-      if (!detection) {
-        alert("No face detected in admin.jpg. Please use a clear, front-facing photo.");
-        return reject("No face detected");
+            if (!detection) {
+              alert("No face detected in admin.jpg. Please use a clear front-facing image.");
+              return reject("No face detected in admin.jpg");
+            }
+
+            const descriptor = detection.descriptor;
+            resolve(new faceapi.LabeledFaceDescriptors('Admin', [descriptor]));
+          })
+        ]);
       }
-
-      const descriptor = detection.descriptor;
-      resolve(new faceapi.LabeledFaceDescriptors('Admin', [descriptor]));
-    })
-  ]);
-}
-
+    };
   </script>
 </body>
 </html>
