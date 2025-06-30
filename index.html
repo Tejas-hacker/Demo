@@ -61,19 +61,26 @@
         }, 1000);
       });
 
-      function loadLabeledImages() {
-        return Promise.all([
-          new faceapi.LabeledFaceDescriptors("Admin", [
-            faceapi.fetchImage('admin.jpg')
-              .then(img => faceapi
-                .detectSingleFace(img)
-                .withFaceLandmarks()
-                .withFaceDescriptor())
-              .then(res => res.descriptor)
-          ])
-        ]);
+     function loadLabeledImages() {
+  return Promise.all([
+    new Promise(async (resolve, reject) => {
+      const img = await faceapi.fetchImage('admin.jpg');
+      const detection = await faceapi
+        .detectSingleFace(img)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!detection) {
+        alert("No face detected in admin.jpg. Please use a clear, front-facing photo.");
+        return reject("No face detected");
       }
-    };
+
+      const descriptor = detection.descriptor;
+      resolve(new faceapi.LabeledFaceDescriptors('Admin', [descriptor]));
+    })
+  ]);
+}
+
   </script>
 </body>
 </html>
