@@ -39,9 +39,10 @@
 
         setInterval(async () => {
           const detections = await faceapi
-            .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceDescriptors();
+  .detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
+  .withFaceLandmarks()
+  .withFaceDescriptors();
+
           const resized = faceapi.resizeResults(detections, displaySize);
           canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 
